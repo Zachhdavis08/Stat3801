@@ -11,17 +11,20 @@ test <- read.csv("C://Users//zachh//Data//Stat_380_test.csv")
 covar <- read.csv("C://Users//zachh//Data//covar_data.csv")
 example <- read.csv("C://Users//zachh//Data//Example_Sub.csv")
 
+test$ic50_Omicron <- 0
 
-group_avg <- train %>%
-  group_by(qc_code) %>%
-  summarize(SalePrice = mean(SalePrice, na.rm = TRUE))
+str(train)
 
-test$ic50_Omicron <- NULL
+numeric_cols <- sapply(train, is.numeric)
+train[numeric_cols] <- lapply(train[numeric_cols], function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x))
+test[numeric_cols] <- lapply(test[numeric_cols], function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x))
 
-lm_model <- lm(ic50_Omicron ~ age + centre + dose_2 + dose_3  + priorSxAtFirstVisit + days_sinceDose2 + days_dose12interval + posTest_beforeVisit, data = train)
-summary(lm_model)
+model <- lm(ic50_Omicron ~ age + sex + centre + dose_2 + dose_3 + Sx_severity_most_recent + priorSxAtFirstVisit + priorSxAtFirstVisitSeverity + days_sinceDose2 + days_sinceDose3 + days_dose12interval + days_dose23interval + days_sinceSxLatest + days_sincePosTest_latest + posTest_beforeVisit, data = train)
+summary(model)
 
-test$ic50_Omicron <- predict(lm_model, newdata = test)
+test$ic50_Omicron <- predict(model, newdata = test)
+
+test$ic50_Omicron <- abs(test$ic50_Omicron)
 
 submit <- select(test, sample_id, ic50_Omicron)
 
