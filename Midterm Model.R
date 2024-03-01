@@ -24,8 +24,6 @@ summary(model)
 
 test$ic50_Omicron <- predict(model, newdata = test)
 
-test$ic50_Omicron <- abs(test$ic50_Omicron)
-
 submit <- select(test, sample_id, ic50_Omicron)
 
 write_csv(submit, path = "submit.csv")
